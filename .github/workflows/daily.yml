@@ -1,0 +1,28 @@
+name: Daily Rashifal Update
+
+on:
+  schedule:
+    - cron: '30 0 * * *'  # Indian Time ke hisaab se roz subah 6:00 AM
+  workflow_dispatch:      # Isse aap button daba kar kabhi bhi check kar sakte hain
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          pip install g4f curl_cffi
+
+      - name: Run Python Script
+        env:
+          MY_APP_PASSWORD: ${{ secrets.GMAIL_PASS }} # Secret se password lega
+        run: python bot.py
