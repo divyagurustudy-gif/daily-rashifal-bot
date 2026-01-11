@@ -10,7 +10,7 @@ BLOGGER_EMAIL = "divyagurustudy.2000@blogger.com"
 MY_GMAIL = "divyagurustudy@gmail.com" 
 
 # GitHub Secrets se password uthane ke liye
-MY_APP_PASSWORD = os.getenv('MY_APP_PASSWORD') 
+MY_APP_PASSWORD = os.getenv('GMAIL_PASS') 
 
 def get_detailed_rashifal():
     try:
