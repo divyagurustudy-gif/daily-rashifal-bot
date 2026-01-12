@@ -11,6 +11,7 @@ POST_ID = os.getenv('POST_ID')
 ONESIGNAL_APP_ID = os.getenv('ONESIGNAL_APP_ID')
 ONESIGNAL_API_KEY = os.getenv('ONESIGNAL_API_KEY')
 GMAIL_USER = "divyagurustudy@gmail.com"
+GMAIL_To = "devoloperworld@gmail.com"
 GMAIL_PASS = os.getenv('GMAIL_PASS')
 
 def get_access_token():
@@ -26,7 +27,7 @@ def send_confirmation_email(today):
         msg = MIMEText(body)
         msg['Subject'] = subject
         msg['From'] = GMAIL_USER
-        msg['To'] = GMAIL_USER
+        msg['To'] = GMAIL_To
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.login(GMAIL_USER, GMAIL_PASS)
         server.sendmail(GMAIL_USER, [GMAIL_USER], msg.as_string())
