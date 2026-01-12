@@ -24,5 +24,12 @@ jobs:
 
       - name: Run Python Script
         env:
-          GMAIL_PASS: ${{ secrets.GMAIL_PASS }} # Secret se password lega
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          BLOG_ID: ${{ secrets.BLOG_ID }}
+          POST_ID: ${{ secrets.POST_ID }}
+          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
         run: python bot.py
