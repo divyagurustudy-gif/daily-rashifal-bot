@@ -2,8 +2,10 @@ name: Daily Rashifal Update
 
 on:
   schedule:
-    - cron: '30 0 * * *'  # Indian Time ke hisaab se roz subah 6:00 AM
-  workflow_dispatch:      # Isse aap button daba kar kabhi bhi check kar sakte hain
+    # 23:47 UTC ka matlab hai Indian Time subah 5:17 AM
+    # Isse delay hone par bhi kaam 6 baje tak ho jayega
+    - cron: '47 23 * * *'  
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install g4f curl_cffi
+          pip install g4f curl_cffi requests
 
       - name: Run Python Script
         env:
