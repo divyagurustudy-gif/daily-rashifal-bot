@@ -45,7 +45,7 @@ def notify(today):
             "included_segments": ["All"],
             "headings": {"en": "आज का राशिफल अपडेट हो गया है! 🌟"},
             "contents": {"en": f"जानिए आज का अपना भाग्य - {today}"},
-            "url": "https://divyagurustudy.blogspot.com"
+            "url": ""
         }
         r = requests.post(url, headers=headers, data=json.dumps(payload))
         print(f"🔔 OneSignal: {r.status_code}")
