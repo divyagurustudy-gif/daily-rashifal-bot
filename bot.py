@@ -64,14 +64,8 @@ def update_post(content, today):
     styled_content = f"""
     <div style="font-family: 'Arial', sans-serif; color: #333; line-height: 1.8; border: 2px solid #f1f1f1; border-radius: 15px; overflow: hidden;">
         <div style="background: linear-gradient(to right, #ff4b1f, #ff9068); color: white; padding: 25px; text-align: center;">
-            <h1 style="margin: 0;">🌟 दिव्य गुरु स्टडी 🌟</h1>
+            <h1 style="margin: 0;">🌟 दैनिक राशिफल 🌟</h1>
             <p style="margin: 5px 0 0;">दैनिक राशिफल - {today}</p>
-        </div>
-        <div style="padding: 20px; background-color: #ffffff;">
-            {content}
-        </div>
-        <div style="background: #333; color: white; padding: 15px; text-align: center; font-size: 14px;">
-            <p>Divya Guru Study © 2024 | Rozana updates ke liye bane rahein</p>
         </div>
     </div>
     """
