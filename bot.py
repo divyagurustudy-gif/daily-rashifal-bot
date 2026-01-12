@@ -22,36 +22,33 @@ def get_access_token():
 
 def send_confirmation_email(today):
     try:
-        subject = f"✅ Rashifal Updated: {today}"
-        body = f"Hello Admin,\n\nAaj ka rashifal ({today}) successfully update ho gaya hai.\n\nBlog Link: https://www.blogger.com/go/post?blogID={BLOG_ID}&postID={POST_ID}"
+        subject = f"✅ Post Updated: {today}"
+        body = f"Hello Admin,\n\nAaj ka rashifal ({today}) successfully update ho gaya hai.\n\nLink: https://www.blogger.com/go/post?blogID={BLOG_ID}&postID={POST_ID}"
         msg = MIMEText(body)
         msg['Subject'] = subject
         msg['From'] = GMAIL_USER
         msg['To'] = GMAIL_To
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.login(GMAIL_USER, GMAIL_PASS)
-        server.sendmail(GMAIL_USER, [GMAIL_To], msg.as_string()) # To address corrected
+        server.sendmail(GMAIL_USER, [GMAIL_To], msg.as_string())
         server.quit()
-        print("📧 Confirmation Email Sent!")
+        print("📧 Email Sent!")
     except Exception as e:
         print(f"❌ Mail Error: {e}")
 
 def notify(today):
     try:
         url = "https://onesignal.com/api/v1/notifications"
-        headers = {
-            "Authorization": f"Basic {ONESIGNAL_API_KEY}", 
-            "Content-Type": "application/json; charset=utf-8"
-        }
+        headers = {"Authorization": f"Basic {ONESIGNAL_API_KEY}", "Content-Type": "application/json; charset=utf-8"}
         payload = {
             "app_id": ONESIGNAL_APP_ID,
             "included_segments": ["All"],
             "headings": {"en": "आज का राशिफल अपडेट हो गया है! 🌟"},
-            "contents": {"en": f"दिव्य गुरु स्टडी: जानिए {today} का अपना भाग्य।"},
-            "url": ""
+            "contents": {"en": f"जानिए आज का अपना भाग्य - {today}"},
+            "url": "https://divyagurustudy.blogspot.com"
         }
         r = requests.post(url, headers=headers, data=json.dumps(payload))
-        print(f"🔔 OneSignal Response: {r.status_code}")
+        print(f"🔔 OneSignal: {r.status_code}")
     except Exception as e:
         print(f"❌ Notification Error: {e}")
 
@@ -60,43 +57,41 @@ def update_post(ai_content, today):
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/{POST_ID}"
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     
-    # Premium HTML Styling (Iss baar content include kiya hai)
+    # App-Friendly Clean Styling (No Site Name)
     styled_content = f"""
-    <div style="font-family: 'Arial', sans-serif; color: #333; line-height: 1.8; border: 2px solid #f1f1f1; border-radius: 15px; overflow: hidden; max-width: 800px; margin: auto;">
-        <div style="background: linear-gradient(to right, #ff4b1f, #ff9068); color: white; padding: 25px; text-align: center;">
-            <h1 style="margin: 0;">🌟 दैनिक राशिफल 🌟</h1>
-            <p style="margin: 5px 0 0; font-weight: bold;">दैनिक राशिफल - {today}</p>
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #222; line-height: 1.6; border: 1px solid #eee; border-radius: 10px; overflow: hidden; max-width: 100%; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <div style="background: #fdfdfd; padding: 20px; text-align: center; border-bottom: 3px solid #ff4b1f;">
+            <h2 style="margin: 0; color: #ff4b1f; font-size: 24px;">✨ आज का राशिफल ✨</h2>
+            <p style="margin: 5px 0 0; color: #666; font-size: 14px;">दिनांक: {today}</p>
         </div>
-        <div style="padding: 20px; background-color: #ffffff;">
+        <div style="padding: 15px; background-color: #ffffff;">
             {ai_content}
         </div>
-        <div style="background: #333; color: white; padding: 15px; text-align: center; font-size: 14px;">
-        
+        <div style="background: #fafafa; color: #999; padding: 10px; text-align: center; font-size: 11px;">
+            <p>Horoscope data updated daily</p>
         </div>
     </div>
     """
     
-    # Payload mein 'labels' jodd diya hai taki Level na hate
     payload = {
-        "title": f"Dainik Rashifal: {today} | आज का राशिफल", 
+        "title": f"Dainik Rashifal: {today}", 
         "content": styled_content,
-        "labels": ["daily rashifal"] # Aapka level yahan fix rahega
+        "labels": ["daily rashifal"] # Level safe rahega
     }
     
     res = requests.put(url, headers=headers, data=json.dumps(payload))
     return res.status_code == 200
 
 if __name__ == "__main__":
-    today = date.today().strftime("%d %B %Y")
+    today = date.today().strftime("%d %b %Y")
     
-    # Zyada vistrit prompt
-    detailed_prompt = f"""Write a very detailed daily horoscope in Hindi for {today}. 
-    Cover all 12 signs (Mesh to Meen). 
+    detailed_prompt = f"""Write a detailed daily horoscope in Hindi for {today}.
+    Provide for all 12 signs (Mesh to Meen). 
     For each sign:
-    - Write 80-100 words including Career, Health, and Love life.
-    - Mention 'Shubh Rang' and 'Shubh Ank' at the end of each sign.
-    - Use <h3> for zodiac names and <p> for descriptions. 
-    - Keep the language professional and astrological."""
+    - Write 80-100 words (Career, Health, Love).
+    - Add 'Shubh Rang' and 'Shubh Ank'.
+    - Use <h3> for zodiac names and <p> for descriptions.
+    - Important: Do not mention any website name like 'Divya Guru Study' in the content."""
 
     try:
         response = g4f.ChatCompletion.create(
@@ -106,12 +101,10 @@ if __name__ == "__main__":
         
         if response:
             if update_post(response, today):
-                print("✅ Blogger Updated with Labels!")
+                print("✅ Blog Updated for App View!")
                 notify(today)
                 send_confirmation_email(today)
             else:
-                print("❌ Blogger Update Failed.")
-        else:
-            print("❌ AI content generation failed.")
+                print("❌ Update Failed.")
     except Exception as e:
-        print(f"❌ System Error: {e}")
+        print(f"❌ Error: {e}")
