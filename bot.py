@@ -1,76 +1,57 @@
-import g4f
-import smtplib
-import os
-import sys
-from email.mime.text import MIMEText
+import os, g4f, json, requests
 from datetime import date
 
-# --- CONFIG ---
-BLOGGER_EMAIL = "divyagurustudy.2000@blogger.com" 
-MY_GMAIL = "divyagurustudy@gmail.com" 
-MY_APP_PASSWORD = os.getenv('GMAIL_PASS') 
+# --- SECRETS SE DATA LENA ---
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
+BLOG_ID = os.getenv('BLOG_ID')
+POST_ID = os.getenv('POST_ID')
+ONESIGNAL_APP_ID = os.getenv('ONESIGNAL_APP_ID')
+ONESIGNAL_API_KEY = os.getenv('ONESIGNAL_API_KEY')
 
-def start_process():
-    today = date.today().strftime("%d %B %Y")
-    print(f"--- Process Started for {today} ---")
+def get_access_token():
+    url = "https://oauth2.googleapis.com/token"
+    data = {
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'refresh_token': REFRESH_TOKEN,
+        'grant_type': 'refresh_token'
+    }
+    return requests.post(url, data=data).json().get('access_token')
 
-    # 1. AI Content Generation
-    try:
-        print("🤖 AI se Rashifal mangwa raha hoon...")
-        
-        # Yahan humne model aur messages ko ekdum saaf tarike se likha hai
-        response = g4f.ChatCompletion.create(
-            model=g4f.models.default,
-            messages=[{"role": "user", "content": f"Aaj {today} ka dainik rashifal Hindi mein vistar se likho."}]
-        )
-        
-        if not response:
-            print("❌ Error: AI response is empty.")
-            sys.exit(1)
-            
-        content = str(response).replace('\n', '<br>')
-        print("✅ AI ne Rashifal likh diya hai.")
+def update_post(content, today):
+    token = get_access_token()
+    url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/{POST_ID}"
+    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+    payload = {
+        "title": f"Dainik Rashifal: {today}",
+        "content": f"<div style='font-family:Arial; line-height:1.6;'>{content}</div>"
+    }
+    res = requests.put(url, headers=headers, data=json.dumps(payload))
+    return res.status_code == 200
 
-    except Exception as e:
-        print(f"❌ AI Critical Error: {str(e)}")
-        sys.exit(1)
-
-    # 2. Email Sending
-    try:
-        print(f"📧 Sending to: {BLOGGER_EMAIL}")
-        
-        if not MY_APP_PASSWORD:
-            print("❌ Error: GMAIL_PASS Secret is missing!")
-            sys.exit(1)
-
-        # Premium Design Template
-        html_content = f"""
-        <div style="font-family: Arial; border: 2px solid #e53935; padding: 20px; border-radius: 10px;">
-            <h1 style="color: #e53935; text-align: center;">दैनिक राशिफल: {today}</h1>
-            <hr>
-            <div style="font-size: 16px; line-height: 1.8;">
-                {content}
-            </div>
-            <hr>
-            <p style="text-align: center; color: gray;">Divya Guru Study</p>
-        </div>
-        """
-
-        msg = MIMEText(html_content, 'html', 'utf-8')
-        msg['Subject'] = f"आज का राशिफल: {today}"
-        msg['From'] = MY_GMAIL
-        msg['To'] = BLOGGER_EMAIL
-
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=30)
-        server.login(MY_GMAIL, MY_APP_PASSWORD)
-        server.sendmail(MY_GMAIL, [BLOGGER_EMAIL], msg.as_string())
-        server.quit()
-        
-        print("🚀 SUCCESS: Email Sent to Blogger!")
-
-    except Exception as e:
-        print(f"❌ Email Error: {str(e)}")
-        sys.exit(1)
+def notify(today):
+    url = "https://onesignal.com/api/v1/notifications"
+    headers = {"Authorization": f"Basic {ONESIGNAL_API_KEY}", "Content-Type": "application/json"}
+    payload = {
+        "app_id": ONESIGNAL_APP_ID,
+        "included_segments": ["Subscribed Users"],
+        "headings": {"en": "आज का राशिफल अपडेट हो गया है! 🌟"},
+        "contents": {"en": f"Check your horoscope for {today} now!"},
+        "url": f"https://divyagurustudy.blogspot.com"
+    }
+    requests.post(url, headers=headers, data=json.dumps(payload))
 
 if __name__ == "__main__":
-    start_process()
+    today = date.today().strftime("%d-%m-%Y")
+    try:
+        response = g4f.ChatCompletion.create(
+            model=g4f.models.default,
+            messages=[{"role": "user", "content": f"Write {today} daily horoscope in Hindi with zodiac icons."}]
+        )
+        if response and update_post(response, today):
+            print("✅ Post Updated!")
+            notify(today)
+    except Exception as e:
+        print(f"❌ Error: {e}")
