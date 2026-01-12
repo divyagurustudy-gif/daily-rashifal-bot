@@ -48,7 +48,7 @@ def notify(today):
             "included_segments": ["All"],
             "headings": {"en": "आज का राशिफल अपडेट हो गया है! 🌟"},
             "contents": {"en": f"दिव्य गुरु स्टडी: जानिए {today} का अपना भाग्य।"},
-            "url": "https://divyagurustudy.blogspot.com"
+            "url": ""
         }
         r = requests.post(url, headers=headers, data=json.dumps(payload))
         print(f"🔔 OneSignal Response: {r.status_code}")
@@ -64,14 +64,14 @@ def update_post(ai_content, today):
     styled_content = f"""
     <div style="font-family: 'Arial', sans-serif; color: #333; line-height: 1.8; border: 2px solid #f1f1f1; border-radius: 15px; overflow: hidden; max-width: 800px; margin: auto;">
         <div style="background: linear-gradient(to right, #ff4b1f, #ff9068); color: white; padding: 25px; text-align: center;">
-            <h1 style="margin: 0;">🌟 दिव्य गुरु स्टडी 🌟</h1>
+            <h1 style="margin: 0;">🌟 दैनिक राशिफल 🌟</h1>
             <p style="margin: 5px 0 0; font-weight: bold;">दैनिक राशिफल - {today}</p>
         </div>
         <div style="padding: 20px; background-color: #ffffff;">
             {ai_content}
         </div>
         <div style="background: #333; color: white; padding: 15px; text-align: center; font-size: 14px;">
-            <p>Divya Guru Study © | Rozana updates ke liye website visit karein</p>
+        
         </div>
     </div>
     """
