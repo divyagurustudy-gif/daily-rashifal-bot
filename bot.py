@@ -27,17 +27,12 @@ def update_post(content, today):
     styled_content = f"""
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; max-width: 800px; margin: auto; padding: 10px; border: 1px solid #ddd; border-radius: 15px;">
         <div style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%); color: white; padding: 20px; text-align: center; border-radius: 12px 12px 0 0;">
-            <h1 style="margin: 0; font-size: 28px;">🌟 दिव्य गुरु स्टडी 🌟</h1>
+            <h1 style="margin: 0; font-size: 28px;">🌟 दैनिक राशिफल 🌟</h1>
             <p style="margin: 5px 0 0; font-size: 18px;">दैनिक राशिफल - {today}</p>
         </div>
         
         <div style="padding: 15px; background-color: #fffaf0;">
             {content}
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 12px 12px; font-size: 14px; border-top: 1px solid #eee;">
-            <p>धन्यवाद! रोज़ाना राशिफल के लिए हमारी वेबसाइट देखते रहें।</p>
-            <strong>Divya Guru Study</strong>
         </div>
     </div>
     """
