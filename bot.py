@@ -30,7 +30,7 @@ def send_confirmation_email(today):
         msg['To'] = GMAIL_To
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.login(GMAIL_USER, GMAIL_PASS)
-        server.sendmail(GMAIL_USER, [GMAIL_USER], msg.as_string())
+        server.sendmail(GMAIL_USER, [GMAIL_To], msg.as_string()) # To address corrected
         server.quit()
         print("📧 Confirmation Email Sent!")
     except Exception as e:
@@ -39,7 +39,6 @@ def send_confirmation_email(today):
 def notify(today):
     try:
         url = "https://onesignal.com/api/v1/notifications"
-        # "Basic " ke baad space ka dhyan rakhein
         headers = {
             "Authorization": f"Basic {ONESIGNAL_API_KEY}", 
             "Content-Type": "application/json; charset=utf-8"
@@ -52,34 +51,52 @@ def notify(today):
             "url": "https://divyagurustudy.blogspot.com"
         }
         r = requests.post(url, headers=headers, data=json.dumps(payload))
-        print(f"🔔 OneSignal Response: {r.status_code} - {r.text}")
+        print(f"🔔 OneSignal Response: {r.status_code}")
     except Exception as e:
         print(f"❌ Notification Error: {e}")
 
-def update_post(content, today):
+def update_post(ai_content, today):
     token = get_access_token()
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/{POST_ID}"
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     
-    # Premium HTML Styling
+    # Premium HTML Styling (Iss baar content include kiya hai)
     styled_content = f"""
-    <div style="font-family: 'Arial', sans-serif; color: #333; line-height: 1.8; border: 2px solid #f1f1f1; border-radius: 15px; overflow: hidden;">
+    <div style="font-family: 'Arial', sans-serif; color: #333; line-height: 1.8; border: 2px solid #f1f1f1; border-radius: 15px; overflow: hidden; max-width: 800px; margin: auto;">
         <div style="background: linear-gradient(to right, #ff4b1f, #ff9068); color: white; padding: 25px; text-align: center;">
-            <h1 style="margin: 0;">🌟 दैनिक राशिफल 🌟</h1>
-            <p style="margin: 5px 0 0;">दैनिक राशिफल - {today}</p>
+            <h1 style="margin: 0;">🌟 दिव्य गुरु स्टडी 🌟</h1>
+            <p style="margin: 5px 0 0; font-weight: bold;">दैनिक राशिफल - {today}</p>
+        </div>
+        <div style="padding: 20px; background-color: #ffffff;">
+            {ai_content}
+        </div>
+        <div style="background: #333; color: white; padding: 15px; text-align: center; font-size: 14px;">
+            <p>Divya Guru Study © | Rozana updates ke liye website visit karein</p>
         </div>
     </div>
     """
     
-    payload = {"title": f"Dainik Rashifal: {today} | आज का राशिफल", "content": styled_content}
+    # Payload mein 'labels' jodd diya hai taki Level na hate
+    payload = {
+        "title": f"Dainik Rashifal: {today} | आज का राशिफल", 
+        "content": styled_content,
+        "labels": ["daily rashifal"] # Aapka level yahan fix rahega
+    }
+    
     res = requests.put(url, headers=headers, data=json.dumps(payload))
     return res.status_code == 200
 
 if __name__ == "__main__":
     today = date.today().strftime("%d %B %Y")
     
-    # Detailed AI Prompt
-    detailed_prompt = f"Write a very detailed daily horoscope in Hindi for today {today}. Cover all 12 signs from Mesh to Meen. For each sign, write 80 words including Career, Health, Love, 'Shubh Rang' and 'Shubh Ank'. Use <h3> for zodiac names and <p> for text."
+    # Zyada vistrit prompt
+    detailed_prompt = f"""Write a very detailed daily horoscope in Hindi for {today}. 
+    Cover all 12 signs (Mesh to Meen). 
+    For each sign:
+    - Write 80-100 words including Career, Health, and Love life.
+    - Mention 'Shubh Rang' and 'Shubh Ank' at the end of each sign.
+    - Use <h3> for zodiac names and <p> for descriptions. 
+    - Keep the language professional and astrological."""
 
     try:
         response = g4f.ChatCompletion.create(
@@ -89,9 +106,9 @@ if __name__ == "__main__":
         
         if response:
             if update_post(response, today):
-                print("✅ Blogger Updated!")
-                notify(today) # Isse OneSignal notification banegi
-                send_confirmation_email(today) # Isse aapko mail aayega
+                print("✅ Blogger Updated with Labels!")
+                notify(today)
+                send_confirmation_email(today)
             else:
                 print("❌ Blogger Update Failed.")
         else:
