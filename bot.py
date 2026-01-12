@@ -18,7 +18,7 @@ def start_process():
     try:
         print("🤖 AI se Rashifal mangwa raha hoon...")
         response = g4f.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model=g4f.models.default
             messages=[{"role": "user", "content": f"Aaj {today} ka dainik rashifal Hindi mein vistar se likho."}],
         )
         
