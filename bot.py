@@ -43,15 +43,31 @@ def send_confirmation_email(today):
         print(f"❌ Mail Error: {e}")
 
 def update_post(content, today):
-    token = get_access_token()
-    url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/{POST_ID}"
-    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
-    payload = {
-        "title": f"Dainik Rashifal: {today}",
-        "content": f"<div style='font-family:Arial; line-height:1.6;'>{content}</div>"
-    }
-    res = requests.put(url, headers=headers, data=json.dumps(payload))
-    return res.status_code == 200
+    try:
+        token = get_access_token()
+        if not token:
+            print("❌ Error: Access Token nahi mil raha. Refresh Token check karein.")
+            return False
+            
+        url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/{POST_ID}"
+        headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+        
+        payload = {
+            "title": f"दैनिक राशिफल: {today}",
+            "content": f"<div style='font-family:Arial; line-height:1.6;'>{content}</div>"
+        }
+        
+        res = requests.put(url, headers=headers, data=json.dumps(payload))
+        
+        if res.status_code == 200:
+            return True
+        else:
+            # Yeh line aapko asli error batayegi
+            print(f"❌ Blogger Error Details: {res.status_code} - {res.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Critical Update Error: {e}")
+        return False
 
 def notify(today):
     url = "https://onesignal.com/api/v1/notifications"
