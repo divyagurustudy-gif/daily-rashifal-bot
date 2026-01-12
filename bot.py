@@ -38,12 +38,16 @@ def send_confirmation_email(today):
 def notify(today):
     try:
         url = "https://onesignal.com/api/v1/notifications"
-        headers = {"Authorization": f"Basic {ONESIGNAL_API_KEY}", "Content-Type": "application/json"}
+        # "Basic " ke baad space ka dhyan rakhein
+        headers = {
+            "Authorization": f"Basic {ONESIGNAL_API_KEY}", 
+            "Content-Type": "application/json; charset=utf-8"
+        }
         payload = {
             "app_id": ONESIGNAL_APP_ID,
             "included_segments": ["All"],
             "headings": {"en": "आज का राशिफल अपडेट हो गया है! 🌟"},
-            "contents": {"en": f"Check your horoscope for {today} now!"},
+            "contents": {"en": f"दिव्य गुरु स्टडी: जानिए {today} का अपना भाग्य।"},
             "url": "https://divyagurustudy.blogspot.com"
         }
         r = requests.post(url, headers=headers, data=json.dumps(payload))
