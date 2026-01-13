@@ -1,6 +1,6 @@
 import os, g4f, json, requests, smtplib
 from email.mime.text import MIMEText
-from datetime import date
+from datetime import datetime, timedelta, timezone
 
 # --- SECRETS SE DATA LENA ---
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -16,7 +16,12 @@ GMAIL_PASS = os.getenv('GMAIL_PASS')
 
 def get_access_token():
     url = "https://oauth2.googleapis.com/token"
-    data = {'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET, 'refresh_token': REFRESH_TOKEN, 'grant_type': 'refresh_token'}
+    data = {
+        'client_id': CLIENT_ID, 
+        'client_secret': CLIENT_SECRET, 
+        'refresh_token': REFRESH_TOKEN, 
+        'grant_type': 'refresh_token'
+    }
     r = requests.post(url, data=data)
     return r.json().get('access_token')
 
@@ -39,13 +44,16 @@ def send_confirmation_email(today):
 def notify(today):
     try:
         url = "https://onesignal.com/api/v1/notifications"
-        headers = {"Authorization": f"Basic {ONESIGNAL_API_KEY}", "Content-Type": "application/json; charset=utf-8"}
+        headers = {
+            "Authorization": f"Basic {ONESIGNAL_API_KEY}", 
+            "Content-Type": "application/json; charset=utf-8"
+        }
         payload = {
             "app_id": ONESIGNAL_APP_ID,
             "included_segments": ["All"],
             "headings": {"en": "आज का राशिफल अपडेट हो गया है! 🌟"},
             "contents": {"en": f"जानिए आज का अपना भाग्य - {today}"},
-            "url": ""
+            "url": "https://divyagurustudy.blogspot.com" # Click karne par yahan jayega
         }
         r = requests.post(url, headers=headers, data=json.dumps(payload))
         print(f"🔔 OneSignal: {r.status_code}")
@@ -57,7 +65,7 @@ def update_post(ai_content, today):
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/{POST_ID}"
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     
-    # App-Friendly Clean Styling (No Site Name)
+    # App-Friendly Clean Styling
     styled_content = f"""
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #222; line-height: 1.6; border: 1px solid #eee; border-radius: 10px; overflow: hidden; max-width: 100%; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <div style="background: #fdfdfd; padding: 20px; text-align: center; border-bottom: 3px solid #ff4b1f;">
@@ -76,15 +84,21 @@ def update_post(ai_content, today):
     payload = {
         "title": f"Dainik Rashifal: {today}", 
         "content": styled_content,
-        "labels": ["daily rashifal"] # Level safe rahega
+        "labels": ["daily rashifal"]
     }
     
     res = requests.put(url, headers=headers, data=json.dumps(payload))
     return res.status_code == 200
 
 if __name__ == "__main__":
-    today = date.today().strftime("%d %b %Y")
+    # --- IST TIMEZONE FIX (Important) ---
+    # GitHub UTC use karta hai (IST se 5:30 ghante peeche)
+    ist = timezone(timedelta(hours=5, minutes=30))
+    today_ist = datetime.now(ist)
+    today = today_ist.strftime("%d %b %Y")
     
+    print(f"🕒 Current Indian Time (IST): {today}")
+
     detailed_prompt = f"""Write a detailed daily horoscope in Hindi for {today}.
     Provide for all 12 signs (Mesh to Meen). 
     For each sign:
@@ -101,10 +115,12 @@ if __name__ == "__main__":
         
         if response:
             if update_post(response, today):
-                print("✅ Blog Updated for App View!")
+                print(f"✅ Blog Updated for {today}!")
                 notify(today)
                 send_confirmation_email(today)
             else:
                 print("❌ Update Failed.")
+        else:
+            print("❌ AI Generation Failed.")
     except Exception as e:
         print(f"❌ Error: {e}")
